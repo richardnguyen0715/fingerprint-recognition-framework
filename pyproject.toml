@@ -1,0 +1,18 @@
+[project]
+name = "hcmus-biometrics"
+version = "0.1.0"
+description = "Final Project of Biometrics Course in HCMUS-VNU"
+authors = [
+    {name = "tuong.nguyen",email = "richardnguyen0715@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "pandas (>=2.3.3,<3.0.0)",
+    "opencv-python (>=4.12.0.88,<5.0.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
