@@ -1,0 +1,25 @@
+# configs/base.yaml
+# Base configuration for fingerprint recognition framework
+
+# Data paths
+data:
+  raw_dir: "data/raw"
+  processed_dir: "data/processed"
+  pairs_dir: "data/pairs"
+  
+# Image preprocessing
+preprocessing:
+  image_size: [256, 256]
+  normalize: true
+  normalize_range: [0.0, 1.0]
+
+# Evaluation settings
+evaluation:
+  num_impostor_per_genuine: 5
+  random_seed: 42
+
+# Logging
+logging:
+  level: "INFO"
+  log_dir: "logs"
+  save_results: true
