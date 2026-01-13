@@ -1,0 +1,63 @@
+# configs/minutiae.yaml
+# Configuration for minutiae-based fingerprint matching
+
+model:
+  name: "minutiae"
+  type: "classical"
+
+# Enhancement parameters
+enhancement:
+  # Block size for orientation field estimation
+  block_size: 16
+  # Gaussian smoothing sigma for gradient
+  gradient_sigma: 1.0
+  # Orientation smoothing sigma
+  orientation_sigma: 3.0
+  
+  # Ridge frequency estimation
+  frequency:
+    block_size: 32
+    window_size: 5
+    min_wavelength: 5
+    max_wavelength: 15
+  
+  # Gabor filter parameters
+  gabor:
+    kernel_size: 25
+    sigma_x: 4.0
+    sigma_y: 4.0
+
+# Binarization
+binarization:
+  method: "adaptive"  # "global", "adaptive", "otsu"
+  block_size: 15
+  offset: 10
+
+# Thinning parameters
+thinning:
+  method: "zhang_suen"  # "zhang_suen", "guo_hall"
+  max_iterations: 100
+
+# Minutiae extraction
+extraction:
+  # Minimum distance from border to consider minutiae valid
+  border_margin: 20
+  # Remove spurious minutiae within this distance
+  spurious_distance: 10
+  # Maximum number of minutiae to extract
+  max_minutiae: 100
+
+# Minutiae matching
+matching:
+  # Distance threshold for minutiae pairing (in pixels)
+  distance_threshold: 15
+  # Angle threshold for minutiae pairing (in radians)
+  angle_threshold: 0.26  # ~15 degrees
+  # Minimum number of matched minutiae for valid match
+  min_matched_minutiae: 8
+  # Alignment method: "ransac", "hough", "iterative"
+  alignment_method: "ransac"
+  # RANSAC iterations
+  ransac_iterations: 1000
+  # RANSAC inlier threshold
+  ransac_threshold: 10.0

@@ -1,0 +1,28 @@
+# configs/ssim.yaml
+# Configuration for SSIM baseline matcher
+
+model:
+  name: "ssim"
+  type: "baseline"
+
+# SSIM specific parameters
+ssim:
+  # Window size for local SSIM computation
+  window_size: 11
+  # Gaussian window sigma
+  sigma: 1.5
+  # Constants for stability (derived from dynamic range L)
+  # C1 = (K1 * L)^2, C2 = (K2 * L)^2
+  k1: 0.01
+  k2: 0.03
+  # Data range for images (1.0 for normalized, 255 for uint8)
+  data_range: 1.0
+  # Use Gaussian weighting
+  gaussian_weights: true
+
+# Also include MSE and NCC baselines
+mse:
+  enabled: true
+
+ncc:
+  enabled: true

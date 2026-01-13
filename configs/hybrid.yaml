@@ -1,0 +1,70 @@
+# configs/hybrid.yaml
+# Configuration for hybrid CNN + classical matching
+
+model:
+  name: "hybrid"
+  type: "hybrid"
+
+# CNN-based enhancement/detection
+cnn_component:
+  # Task: "enhancement", "minutiae_detection", "both"
+  task: "minutiae_detection"
+  
+  # Enhancement network (U-Net style)
+  enhancement:
+    enabled: true
+    architecture: "unet"
+    input_size: [256, 256]
+    depth: 4
+    initial_filters: 32
+    
+  # Minutiae detection network
+  minutiae_detection:
+    enabled: true
+    architecture: "hourglass"
+    input_size: [256, 256]
+    num_stacks: 2
+    # Output channels: location_heatmap, orientation_x, orientation_y
+    output_channels: 3
+    # Non-maximum suppression radius
+    nms_radius: 5
+    # Detection threshold
+    detection_threshold: 0.5
+
+# Classical matching on CNN output
+classical_component:
+  # Use MCC descriptors on detected minutiae
+  use_mcc: true
+  mcc_config: "configs/mcc.yaml"
+  
+  # Alternative: direct minutiae matching
+  direct_matching:
+    enabled: false
+    distance_threshold: 15
+    angle_threshold: 0.26
+
+# Training
+training:
+  # Pretrained weights for CNN components
+  pretrained_enhancement: null
+  pretrained_minutiae: null
+  
+  # Joint training
+  joint_training: false
+  
+  # Individual component training
+  enhancement_epochs: 50
+  minutiae_epochs: 100
+  
+  # Learning rates
+  enhancement_lr: 0.001
+  minutiae_lr: 0.0005
+  
+  batch_size: 16
+
+# Fusion (if using multiple scores)
+fusion:
+  # Method: "sum", "product", "weighted", "learned"
+  method: "weighted"
+  # Weights for [cnn_score, classical_score]
+  weights: [0.3, 0.7]

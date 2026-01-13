@@ -1,0 +1,65 @@
+# configs/patch_cnn.yaml
+# Configuration for patch-based CNN around minutiae
+
+model:
+  name: "patch_cnn"
+  type: "deep_learning"
+
+# Patch extraction
+patch:
+  # Size of patch around each minutia
+  size: 64
+  # Align patch to minutia orientation
+  align_orientation: true
+  # Maximum number of patches per fingerprint
+  max_patches: 50
+
+# Network architecture for patch embedding
+architecture:
+  # Input patch size
+  input_size: [64, 64]
+  # Number of input channels
+  input_channels: 1
+  # Patch embedding dimension
+  embedding_dim: 64
+  # Use batch normalization
+  batch_norm: true
+  # Dropout rate
+  dropout: 0.3
+
+# CNN layers for patch processing
+cnn_layers:
+  conv_layers:
+    - [32, 3, 1, 1]
+    - [64, 3, 1, 1]
+    - [128, 3, 1, 1]
+  pool_size: 2
+  fc_layers: [128]
+
+# Aggregation method for patch embeddings
+aggregation:
+  # Method: "mean", "max", "attention", "netvlad"
+  method: "attention"
+  # Attention heads (if using attention)
+  attention_heads: 4
+  # NetVLAD clusters (if using netvlad)
+  netvlad_clusters: 16
+
+# Training parameters
+training:
+  loss: "triplet"
+  triplet_margin: 0.3
+  learning_rate: 0.0005
+  weight_decay: 0.0001
+  batch_size: 64
+  epochs: 80
+  scheduler: "step"
+  step_size: 20
+  gamma: 0.5
+
+# Mining strategy for triplet loss
+mining:
+  # Strategy: "random", "hard", "semi_hard"
+  strategy: "semi_hard"
+  # Number of negative samples per anchor
+  num_negatives: 5

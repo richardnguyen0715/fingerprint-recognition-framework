@@ -1,0 +1,44 @@
+# configs/mcc.yaml
+# Configuration for Minutia Cylinder Code (MCC) descriptor matching
+
+model:
+  name: "mcc"
+  type: "descriptor"
+
+# MCC descriptor parameters
+mcc:
+  # Cylinder radius (spatial extent around minutia)
+  radius: 70
+  # Number of spatial cells along diameter
+  num_spatial_cells: 16
+  # Number of angular sections
+  num_angular_sections: 6
+  # Sigmoid parameter for soft assignment
+  sigma_s: 7.0
+  # Angular sigmoid parameter
+  sigma_d: 0.5235987755982988  # pi/6 radians
+  # Minimum minutiae in cylinder for valid descriptor
+  min_minutiae_in_cylinder: 2
+  # Binarization threshold for cylinder
+  binarization_threshold: 0.1
+
+# Matching parameters
+matching:
+  # Similarity metric: "lss" (Local Similarity Sort), "lsar" (Local Similarity Assignment with Relaxation)
+  method: "lss"
+  # Number of top local similarities to consider
+  num_top_pairs: 5
+  # Relaxation iterations for LSAR
+  relaxation_iterations: 5
+  # Minimum descriptor similarity threshold
+  min_similarity: 0.3
+
+# Local orientation descriptor (alternative)
+local_orientation:
+  enabled: true
+  # Patch size around minutia
+  patch_size: 64
+  # Number of orientation bins
+  num_bins: 8
+  # Number of spatial cells
+  spatial_cells: 4

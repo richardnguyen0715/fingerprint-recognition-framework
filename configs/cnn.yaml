@@ -1,0 +1,78 @@
+# configs/cnn.yaml
+# Configuration for CNN-based fingerprint recognition
+
+model:
+  name: "cnn_embedding"
+  type: "deep_learning"
+
+# Network architecture
+architecture:
+  # Backbone: "resnet18", "resnet34", "custom"
+  backbone: "custom"
+  # Input image size
+  input_size: [256, 256]
+  # Number of input channels
+  input_channels: 1
+  # Embedding dimension
+  embedding_dim: 128
+  # Dropout rate
+  dropout: 0.5
+  # Use batch normalization
+  batch_norm: true
+
+# Custom CNN architecture (if backbone is "custom")
+custom_cnn:
+  # Convolutional layers: [out_channels, kernel_size, stride, padding]
+  conv_layers:
+    - [32, 3, 1, 1]
+    - [64, 3, 1, 1]
+    - [128, 3, 1, 1]
+    - [256, 3, 1, 1]
+  # Max pooling after each conv layer
+  pool_size: 2
+  # Fully connected layers
+  fc_layers: [512, 256]
+
+# Training parameters
+training:
+  # Loss function: "contrastive", "triplet", "arcface"
+  loss: "contrastive"
+  # Contrastive loss margin
+  contrastive_margin: 1.0
+  # Triplet loss margin
+  triplet_margin: 0.5
+  # Learning rate
+  learning_rate: 0.001
+  # Weight decay
+  weight_decay: 0.0001
+  # Batch size
+  batch_size: 32
+  # Number of epochs
+  epochs: 100
+  # Learning rate scheduler
+  scheduler: "cosine"
+  # Warmup epochs
+  warmup_epochs: 5
+
+# Data augmentation
+augmentation:
+  enabled: true
+  # Random rotation range (degrees)
+  rotation: 15
+  # Random translation (fraction of image size)
+  translation: 0.1
+  # Random scale range
+  scale: [0.9, 1.1]
+  # Elastic deformation
+  elastic:
+    enabled: true
+    alpha: 50
+    sigma: 5
+  # Brightness/contrast jitter
+  brightness_jitter: 0.2
+  contrast_jitter: 0.2
+
+# Inference
+inference:
+  # Similarity metric: "cosine", "euclidean"
+  metric: "cosine"
