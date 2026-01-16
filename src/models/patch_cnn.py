@@ -595,6 +595,7 @@ class PatchCNNMatcher:
         
         # Minutiae extractor (lazy loading)
         self._extractor = None
+        self._thinner = None
     
     @property
     def name(self) -> str:
@@ -609,6 +610,14 @@ class PatchCNNMatcher:
             self._thinner = Thinner()
             self._extractor = MinutiaeExtractor()
         return self._extractor
+    
+    @property
+    def thinner(self):
+        """Get thinner (lazy loading)."""
+        if self._thinner is None:
+            # Trigger extractor property to initialize both
+            _ = self.extractor
+        return self._thinner
     
     def load(self, path: str) -> None:
         """Load model weights."""
@@ -642,7 +651,7 @@ class PatchCNNMatcher:
             else:
                 binary = (image < 0.5).astype(np.uint8)
             
-            skeleton = self._thinner.process(binary)
+            skeleton = self.thinner.process(binary)
             minutiae = self.extractor.extract(skeleton)
         
         # Extract patches

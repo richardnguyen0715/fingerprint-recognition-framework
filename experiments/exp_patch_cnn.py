@@ -29,6 +29,31 @@ from src.data.pair_generator import PairGenerator
 from src.evaluation import VerificationEvaluator
 from src.utils.logger import get_logger
 
+# Import shared experiment utilities
+sys.path.insert(0, str(project_root / "experiments"))
+try:
+    from exp_cnn_embedding import load_pairs_from_dataset
+except ImportError:
+    # Fallback if import fails
+    def load_pairs_from_dataset(dataset, num_impostor_ratio=1.0):
+        """Load evaluation pairs from dataset."""
+        generator = PairGenerator(dataset)
+        all_pairs = generator.generate_pairs(impostor_ratio=num_impostor_ratio)
+        
+        genuine_pairs = []
+        impostor_pairs = []
+        
+        for pair in all_pairs:
+            img1 = pair.sample1.load_image()
+            img2 = pair.sample2.load_image()
+            
+            if pair.label == 1:
+                genuine_pairs.append((img1, img2))
+            else:
+                impostor_pairs.append((img1, img2))
+        
+        return genuine_pairs, impostor_pairs
+
 # Check for PyTorch
 try:
     import torch
@@ -362,10 +387,35 @@ def run_patch_cnn_experiment(
         )
         
         logger.info("Training complete!")
-    else:
-        logger.info("Skipping training (use --train to train a new model)")
+        
+        # Use trained model for evaluation
+        model_path = str(output_path / "patch_cnn_model.pth")
     
-    logger.info(f"Results saved to {output_path}")
+    # Evaluation
+    if model_path and Path(model_path).exists():
+        matcher = PatchCNNMatcher(config=config, model_path=model_path, device=device)
+        genuine_pairs, impostor_pairs = load_pairs_from_dataset(dataset)
+        
+        # Evaluate
+        logger.info("Running evaluation...")
+        evaluator = VerificationEvaluator(matcher, verbose=True)
+        results = evaluator.evaluate(genuine_pairs, impostor_pairs)
+        
+        # Generate report
+        evaluator.generate_report(results, str(output_path))
+        
+        # Print results
+        print("\n" + "="*60)
+        print("PATCH CNN EXPERIMENT RESULTS")
+        print("="*60)
+        print(results)
+        print("="*60)
+    
+    elif not train:
+        logger.info("Skipping training (use --train to train a new model)")
+        logger.info("Skipping evaluation (no model path provided)")
+    
+    logger.info(f"\nAll results saved to {output_path}")
 
 
 def main():
