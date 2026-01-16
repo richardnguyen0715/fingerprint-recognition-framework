@@ -645,13 +645,14 @@ class PatchCNNMatcher:
         """
         # Extract minutiae if not provided
         if minutiae is None:
-            # Binarize image
-            if image.max() > 1:
-                binary = (image < 128).astype(np.uint8)
+            # Convert to uint8 grayscale if needed (thinner handles binarization)
+            if image.dtype in [np.float32, np.float64]:
+                gray = (image * 255).clip(0, 255).astype(np.uint8)
             else:
-                binary = (image < 0.5).astype(np.uint8)
+                gray = image.astype(np.uint8)
             
-            skeleton = self.thinner.process(binary)
+            # Thinner handles binarization internally with adaptive threshold
+            skeleton = self.thinner.process(gray)
             minutiae = self.extractor.extract(skeleton)
         
         # Extract patches

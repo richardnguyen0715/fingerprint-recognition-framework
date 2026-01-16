@@ -114,14 +114,14 @@ class PatchPairDataset(Dataset):
         
         extractor, thinner = self.get_extractor()
         
-        # Binarize
-        if image.max() > 1:
-            binary = (image < 128).astype(np.uint8)
+        # Convert to uint8 grayscale if needed (thinner handles binarization)
+        if image.dtype in [np.float32, np.float64]:
+            gray = (image * 255).clip(0, 255).astype(np.uint8)
         else:
-            binary = (image < 0.5).astype(np.uint8)
+            gray = image.astype(np.uint8)
         
-        # Extract minutiae
-        skeleton = thinner.process(binary)
+        # Extract minutiae - thinner handles binarization internally
+        skeleton = thinner.process(gray)
         minutiae = extractor.extract(skeleton)
         
         # Extract patches
