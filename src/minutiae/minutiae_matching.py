@@ -221,7 +221,8 @@ def ransac_alignment(
     distance_threshold: float = 15.0,
     angle_threshold: float = 0.26,
     num_iterations: int = 1000,
-    min_inliers: int = 5
+    min_inliers: int = 5,
+    random_state: Optional[int] = None
 ) -> Tuple[List[MinutiaeMatch], Tuple[float, float, float]]:
     """
     RANSAC-based minutiae alignment and matching.
@@ -240,6 +241,7 @@ def ransac_alignment(
         angle_threshold: Angle threshold for inliers
         num_iterations: Number of RANSAC iterations
         min_inliers: Minimum inliers for valid match
+        random_state: Random seed for reproducibility (None for random behavior)
         
     Returns:
         Tuple of (best_matches, best_transformation)
@@ -247,14 +249,20 @@ def ransac_alignment(
     if len(minutiae1) == 0 or len(minutiae2) == 0:
         return [], (0.0, 0.0, 0.0)
     
+    # Set random seed for reproducibility
+    if random_state is not None:
+        rng = np.random.RandomState(random_state)
+    else:
+        rng = np.random
+    
     best_matches = []
     best_transform = (0.0, 0.0, 0.0)
     best_score = 0
     
     for _ in range(num_iterations):
         # Randomly select reference pair
-        idx1 = np.random.randint(len(minutiae1))
-        idx2 = np.random.randint(len(minutiae2))
+        idx1 = rng.randint(len(minutiae1))
+        idx2 = rng.randint(len(minutiae2))
         
         # Optionally: require same type
         if minutiae1[idx1].minutiae_type != minutiae2[idx2].minutiae_type:
@@ -339,7 +347,8 @@ class MinutiaeMatcher(FingerprintMatcher):
         angle_threshold: float = 0.26,
         min_matched_minutiae: int = 8,
         alignment_method: str = 'ransac',
-        ransac_iterations: int = 1000
+        ransac_iterations: int = 1000,
+        random_state: Optional[int] = 42
     ):
         """
         Initialize minutiae matcher.
@@ -350,12 +359,14 @@ class MinutiaeMatcher(FingerprintMatcher):
             min_matched_minutiae: Minimum matches for valid comparison
             alignment_method: Alignment method ('ransac' or 'exhaustive')
             ransac_iterations: Number of RANSAC iterations
+            random_state: Random seed for RANSAC reproducibility (None for random)
         """
         self.distance_threshold = distance_threshold
         self.angle_threshold = angle_threshold
         self.min_matched_minutiae = min_matched_minutiae
         self.alignment_method = alignment_method
         self.ransac_iterations = ransac_iterations
+        self.random_state = random_state
     
     @property
     def name(self) -> str:
@@ -385,7 +396,8 @@ class MinutiaeMatcher(FingerprintMatcher):
                 self.distance_threshold,
                 self.angle_threshold,
                 self.ransac_iterations,
-                self.min_matched_minutiae
+                self.min_matched_minutiae,
+                self.random_state
             )
         else:
             # Exhaustive search (slower but deterministic)
@@ -484,7 +496,7 @@ class MinutiaeMatchingPipeline:
         self.enhancer = enhancer
         self.thinner = thinner or Thinner()
         self.extractor = extractor or MinutiaeExtractor()
-        self.matcher = matcher or MinutiaeMatcher()
+        self.matcher = matcher or MinutiaeMatcher(random_state=42)
     
     def extract_minutiae(self, image: np.ndarray) -> List[Minutia]:
         """
