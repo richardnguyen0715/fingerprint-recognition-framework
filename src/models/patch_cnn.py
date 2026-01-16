@@ -825,7 +825,7 @@ if TORCH_AVAILABLE:
             from src.models.cnn_embedding import ContrastiveLoss
             self.loss_fn = ContrastiveLoss(margin=1.0)
             
-            self.history = {"train_loss": [], "val_loss": []}
+            self.history = {"train_loss": []}
         
         def train_epoch(self, dataloader: DataLoader) -> float:
             """Train one epoch."""
@@ -874,14 +874,7 @@ if TORCH_AVAILABLE:
                 train_loss = self.train_epoch(train_loader)
                 self.history["train_loss"].append(train_loss)
                 
-                # Validation
-                if val_loader is not None:
-                    val_loss = self.validate(val_loader)
-                    self.history["val_loss"].append(val_loss)
-                    print(f"Epoch {epoch+1}/{num_epochs} - "
-                          f"Train Loss: {train_loss:.4f} - Val Loss: {val_loss:.4f}")
-                else:
-                    print(f"Epoch {epoch+1}/{num_epochs} - Train Loss: {train_loss:.4f}")
+                print(f"Epoch {epoch+1}/{num_epochs} - Train Loss: {train_loss:.4f}")
             
             return self.history
         
