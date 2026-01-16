@@ -265,7 +265,9 @@ def prepare_training_data(
                 str(all_val_samples[s2].path),
                 1
             ))
-    
+    np.random.shuffle(train_pairs)
+    np.random.shuffle(val_pairs)
+
     return train_pairs, val_pairs
 
 
