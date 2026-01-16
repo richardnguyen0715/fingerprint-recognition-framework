@@ -273,6 +273,7 @@ def train_patch_cnn_model(
     
     # Create datasets
     train_dataset = PatchPairDataset(train_pairs, config)
+    val_dataset = PatchPairDataset(val_pairs, config)
     
     # Create dataloaders
     train_loader = DataLoader(
@@ -280,6 +281,13 @@ def train_patch_cnn_model(
         batch_size=config.batch_size,
         shuffle=True,
         num_workers=0  # Set to 0 to avoid multiprocessing issues
+    )
+    
+    val_loader = DataLoader(
+        val_dataset,
+        batch_size=config.batch_size,
+        shuffle=False,
+        num_workers=0
     )
     
     # Create model
@@ -290,7 +298,7 @@ def train_patch_cnn_model(
     
     # Train
     print(f"\nStarting training for {num_epochs} epochs...")
-    history = trainer.train(train_loader, num_epochs=num_epochs)
+    history = trainer.train(train_loader, val_loader, num_epochs=num_epochs)
     
     # Save model
     if output_dir:

@@ -855,6 +855,7 @@ if TORCH_AVAILABLE:
         def train(
             self,
             train_loader: DataLoader,
+            val_loader: Optional[DataLoader] = None,
             num_epochs: Optional[int] = None
         ) -> Dict[str, List[float]]:
             """Full training loop."""
@@ -863,9 +864,48 @@ if TORCH_AVAILABLE:
             for epoch in range(num_epochs):
                 train_loss = self.train_epoch(train_loader)
                 self.history["train_loss"].append(train_loss)
-                print(f"Epoch {epoch+1}/{num_epochs} - Loss: {train_loss:.4f}")
+                
+                # Validation
+                if val_loader is not None:
+                    val_loss = self.validate(val_loader)
+                    self.history["val_loss"].append(val_loss)
+                    print(f"Epoch {epoch+1}/{num_epochs} - "
+                          f"Train Loss: {train_loss:.4f} - Val Loss: {val_loss:.4f}")
+                else:
+                    print(f"Epoch {epoch+1}/{num_epochs} - Train Loss: {train_loss:.4f}")
             
             return self.history
+        
+        def validate(self, dataloader: DataLoader) -> float:
+            """Validate the model."""
+            self.model.eval()
+            total_loss = 0.0
+            num_batches = 0
+            
+            with torch.no_grad():
+                for patches1, patches2, labels, n1, n2 in dataloader:
+                    batch_size = patches1.size(0)
+                    
+                    # Flatten patches for encoding
+                    all_patches1 = patches1.view(-1, 1, 
+                        self.config.patch_size, self.config.patch_size).to(self.device)
+                    all_patches2 = patches2.view(-1, 1,
+                        self.config.patch_size, self.config.patch_size).to(self.device)
+                    
+                    labels = labels.to(self.device).float()
+                    
+                    # Encode each fingerprint
+                    emb1 = self.model(all_patches1, n1.tolist())
+                    emb2 = self.model(all_patches2, n2.tolist())
+                    
+                    # Compute loss
+                    loss = self.loss_fn(emb1, emb2, labels)
+                    
+                    total_loss += loss.item()
+                    num_batches += 1
+            
+            self.model.train()
+            return total_loss / num_batches if num_batches > 0 else 0.0
 
 
 # =============================================================================
