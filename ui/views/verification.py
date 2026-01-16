@@ -136,13 +136,20 @@ def _render_matching_section() -> None:
     col1, col2, col3 = st.columns([1, 2, 1])
     
     with col2:
-        match_clicked = st.button(
-            "Match Fingerprints",
-            type="primary",
-            width='stretch',
-            disabled=not ready,
-        )
-    
+        try:
+            match_clicked = st.button(
+                "Match Fingerprints",
+                type="primary",
+                width='stretch',
+                disabled=not ready,
+            )
+        except TypeError:
+            match_clicked = st.button(
+                "Match Fingerprints",
+                type="primary",
+                use_container_width=True,
+                disabled=not ready,
+            )    
     # Run matching if clicked
     if match_clicked and ready:
         _run_matching()

@@ -813,6 +813,178 @@ def register_all_matchers(registry: MatcherRegistry) -> None:
         ],
         requires_preprocessing=True,
     )
+    
+    # =========================================================================
+    # DEEP LEARNING MATCHERS
+    # =========================================================================
+    
+    # Import DL matchers
+    from src.registry.dl_matchers import (
+        CNNEmbeddingMatcherAdapter,
+        PatchCNNMatcherAdapter,
+        HybridMatcherAdapter,
+    )
+    
+    # CNN Embedding Matcher
+    registry.register(
+        matcher_id="cnn_embedding",
+        name="CNN Embedding",
+        description=(
+            "Deep learning model that learns discriminative embeddings. "
+            "Requires pretrained weights for matching."
+        ),
+        category="deep_learning",
+        factory=CNNEmbeddingMatcherAdapter,
+        parameters=[
+            ParameterInfo(
+                name="embedding_dim",
+                display_name="Embedding Dimension",
+                param_type=ParameterType.INTEGER,
+                default=128,
+                description="Dimension of embedding vector",
+                min_value=32,
+                max_value=512,
+                step=32,
+            ),
+            ParameterInfo(
+                name="model_path",
+                display_name="Model Path",
+                param_type=ParameterType.STRING,
+                default="",
+                description="Path to pretrained model weights (.pth file)",
+            ),
+            ParameterInfo(
+                name="backbone",
+                display_name="Backbone",
+                param_type=ParameterType.SELECT,
+                default="custom",
+                description="Network backbone architecture",
+                options=["custom", "resnet18", "resnet34", "resnet50"],
+            ),
+            ParameterInfo(
+                name="device",
+                display_name="Device",
+                param_type=ParameterType.SELECT,
+                default="cpu",
+                description="Computation device",
+                options=["cpu", "cuda"],
+            ),
+        ],
+        requires_preprocessing=False,
+    )
+    
+    # Patch CNN Matcher
+    registry.register(
+        matcher_id="patch_cnn",
+        name="Patch CNN",
+        description=(
+            "Combines minutiae extraction with CNN patch encoding. "
+            "Requires pretrained weights for matching."
+        ),
+        category="deep_learning",
+        factory=PatchCNNMatcherAdapter,
+        parameters=[
+            ParameterInfo(
+                name="embedding_dim",
+                display_name="Embedding Dimension",
+                param_type=ParameterType.INTEGER,
+                default=64,
+                description="Dimension of patch embeddings",
+                min_value=32,
+                max_value=256,
+                step=32,
+            ),
+            ParameterInfo(
+                name="patch_size",
+                display_name="Patch Size",
+                param_type=ParameterType.INTEGER,
+                default=64,
+                description="Size of patches around minutiae",
+                min_value=32,
+                max_value=128,
+                step=16,
+            ),
+            ParameterInfo(
+                name="model_path",
+                display_name="Model Path",
+                param_type=ParameterType.STRING,
+                default="",
+                description="Path to pretrained model weights (.pth file)",
+            ),
+            ParameterInfo(
+                name="aggregation",
+                display_name="Aggregation Method",
+                param_type=ParameterType.SELECT,
+                default="attention",
+                description="Method to aggregate patch embeddings",
+                options=["attention", "mean", "max", "netvlad"],
+            ),
+            ParameterInfo(
+                name="device",
+                display_name="Device",
+                param_type=ParameterType.SELECT,
+                default="cpu",
+                description="Computation device",
+                options=["cpu", "cuda"],
+            ),
+        ],
+        requires_preprocessing=False,
+    )
+    
+    # Hybrid Matcher
+    registry.register(
+        matcher_id="hybrid",
+        name="Hybrid CNN + Classical",
+        description=(
+            "Combines CNN-based methods with classical matching. "
+            "Under development."
+        ),
+        category="deep_learning",
+        factory=HybridMatcherAdapter,
+        parameters=[
+            ParameterInfo(
+                name="model_path",
+                display_name="Model Path",
+                param_type=ParameterType.STRING,
+                default="",
+                description="Path to pretrained model weights (.pth file)",
+            ),
+            ParameterInfo(
+                name="fusion_method",
+                display_name="Fusion Method",
+                param_type=ParameterType.SELECT,
+                default="weighted",
+                description="Score fusion strategy",
+                options=["mean", "weighted", "max", "min", "product"],
+            ),
+            ParameterInfo(
+                name="cnn_weight",
+                display_name="CNN Weight",
+                param_type=ParameterType.FLOAT,
+                default=0.5,
+                description="Weight for CNN scores in weighted fusion",
+                min_value=0.0,
+                max_value=1.0,
+                step=0.1,
+            ),
+            ParameterInfo(
+                name="use_enhancement",
+                display_name="Use Enhancement",
+                param_type=ParameterType.BOOLEAN,
+                default=True,
+                description="Whether to use CNN enhancement",
+            ),
+            ParameterInfo(
+                name="device",
+                display_name="Device",
+                param_type=ParameterType.SELECT,
+                default="cpu",
+                description="Computation device",
+                options=["cpu", "cuda"],
+            ),
+        ],
+        requires_preprocessing=False,
+    )
 
 
 # Auto-register when this module is imported

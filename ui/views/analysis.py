@@ -195,11 +195,18 @@ def _render_history_analysis() -> None:
             "Score": format_score(result.get("score", 0)),
         })
     
-    st.dataframe(
-        results_data,
-        width='stretch',
-        hide_index=True,
-    )
+    try:
+        st.dataframe(
+            results_data,
+            width='stretch',
+            hide_index=True,
+        )
+    except TypeError:
+        st.dataframe(
+            results_data,
+            use_container_width=True,
+            hide_index=True,
+        )
     
     # Clear history button
     st.markdown("---")
@@ -317,10 +324,29 @@ def _render_score_interpretation() -> None:
             "Strengths": "Robust, discriminative",
             "Weaknesses": "Requires many minutiae",
         },
+        {
+            "Method": "CNN Embedding",
+            "Type": "Deep Learning",
+            "Strengths": "Learns discriminative features",
+            "Weaknesses": "Requires training, pretrained weights",
+        },
+        {
+            "Method": "Patch CNN",
+            "Type": "Deep Learning",
+            "Strengths": "Combines minutiae + DL",
+            "Weaknesses": "Requires training, pretrained weights",
+        },
     ]
-    
-    st.dataframe(
-        methods,
-        width='stretch',
-        hide_index=True,
-    )
+
+    try:
+        st.dataframe(
+            methods,
+            width='stretch',
+            hide_index=True,
+        )
+    except TypeError:
+        st.dataframe(
+            methods,
+            use_container_width=True,
+            hide_index=True,
+        )

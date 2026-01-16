@@ -169,12 +169,20 @@ def _render_comparison_execution() -> None:
     col1, col2, col3 = st.columns([1, 2, 1])
     
     with col2:
-        run_clicked = st.button(
-            "Run All Methods",
-            type="primary",
-            width='stretch',
-            disabled=not ready,
-        )
+        try:
+            run_clicked = st.button(
+                "Run All Methods",
+                type="primary",
+                width='stretch',
+                disabled=not ready,
+            )
+        except TypeError:
+            run_clicked = st.button(
+                "Run All Methods",
+                type="primary",
+                use_container_width=True,
+                disabled=not ready,
+            )
     
     if run_clicked and ready:
         _run_all_comparisons()

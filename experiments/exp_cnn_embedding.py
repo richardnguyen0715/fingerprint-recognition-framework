@@ -28,7 +28,7 @@ import numpy as np
 from src.data.fingerprint_dataset import FingerprintDataset
 from src.data.pair_generator import PairGenerator
 from src.evaluation import VerificationEvaluator, compare_matchers
-from src.utils.logger import setup_logger
+from src.utils.logger import get_logger
 
 # Check for PyTorch
 try:
@@ -173,7 +173,7 @@ def train_cnn_model(
     if not TORCH_AVAILABLE:
         raise ImportError("PyTorch required for training")
     
-    logger = setup_logger("cnn_training")
+    logger = get_logger("cnn_training")
     
     # Create datasets
     train_dataset = FingerprintPairDataset(
@@ -249,7 +249,7 @@ def run_cnn_experiment(
         print("Error: PyTorch required for CNN experiments")
         return None
     
-    logger = setup_logger("cnn_experiment")
+    logger = get_logger("cnn_experiment")
     logger.info("Starting CNN embedding experiment")
     
     # Create output directory
@@ -258,8 +258,8 @@ def run_cnn_experiment(
     
     # Load dataset
     logger.info(f"Loading dataset from {data_dir}")
-    dataset = FingerprintDataset(data_dir, name="FVC2004")
-    dataset.scan()
+    dataset = FingerprintDataset(data_dir)
+    # dataset.scan()
     
     logger.info(f"Found {len(dataset)} samples")
     
@@ -331,7 +331,7 @@ def compare_backbones(
         print("Error: PyTorch required for CNN experiments")
         return None
     
-    logger = setup_logger("backbone_comparison")
+    logger = get_logger("backbone_comparison")
     logger.info("Comparing CNN backbones")
     
     # Create output directory
