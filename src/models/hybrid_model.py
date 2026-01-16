@@ -550,7 +550,7 @@ class HybridMatcher:
             self.classical_matcher = MCCMatcher()
         elif self.config.classical_matcher == "minutiae":
             from src.minutiae.minutiae_matching import MinutiaeMatcher
-            self.classical_matcher = MinutiaeMatcher()
+            self.classical_matcher = MinutiaeMatcher(random_state=42)
         elif self.config.classical_matcher == "local_orientation":
             from src.descriptors.descriptor_matching import LocalOrientationMatcher
             self.classical_matcher = LocalOrientationMatcher()

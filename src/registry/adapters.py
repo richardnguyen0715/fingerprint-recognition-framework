@@ -349,6 +349,7 @@ class MinutiaeMatcherAdapter(BaseMatcher):
             angle_threshold=self._angle_threshold,
             min_matched_minutiae=self._min_matched_minutiae,
             ransac_iterations=self._ransac_iterations,
+            random_state=42  # Fixed seed for reproducibility
         )
         self._pipeline = MinutiaeMatchingPipeline(matcher=matcher)
         self._matcher = matcher
