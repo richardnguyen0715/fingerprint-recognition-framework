@@ -595,6 +595,7 @@ class PatchCNNMatcher:
         
         # Minutiae extractor (lazy loading)
         self._extractor = None
+        self._thinner = None
     
     @property
     def name(self) -> str:
@@ -609,6 +610,14 @@ class PatchCNNMatcher:
             self._thinner = Thinner()
             self._extractor = MinutiaeExtractor()
         return self._extractor
+    
+    @property
+    def thinner(self):
+        """Get thinner (lazy loading)."""
+        if self._thinner is None:
+            # Trigger extractor property to initialize both
+            _ = self.extractor
+        return self._thinner
     
     def load(self, path: str) -> None:
         """Load model weights."""
@@ -636,13 +645,14 @@ class PatchCNNMatcher:
         """
         # Extract minutiae if not provided
         if minutiae is None:
-            # Binarize image
-            if image.max() > 1:
-                binary = (image < 128).astype(np.uint8)
+            # Convert to uint8 grayscale if needed (thinner handles binarization)
+            if image.dtype in [np.float32, np.float64]:
+                gray = (image * 255).clip(0, 255).astype(np.uint8)
             else:
-                binary = (image < 0.5).astype(np.uint8)
+                gray = image.astype(np.uint8)
             
-            skeleton = self._thinner.process(binary)
+            # Thinner handles binarization internally with adaptive threshold
+            skeleton = self.thinner.process(gray)
             minutiae = self.extractor.extract(skeleton)
         
         # Extract patches
@@ -816,7 +826,7 @@ if TORCH_AVAILABLE:
             from src.models.cnn_embedding import ContrastiveLoss
             self.loss_fn = ContrastiveLoss(margin=1.0)
             
-            self.history = {"train_loss": [], "val_loss": []}
+            self.history = {"train_loss": []}
         
         def train_epoch(self, dataloader: DataLoader) -> float:
             """Train one epoch."""
@@ -855,6 +865,7 @@ if TORCH_AVAILABLE:
         def train(
             self,
             train_loader: DataLoader,
+            val_loader: Optional[DataLoader] = None,
             num_epochs: Optional[int] = None
         ) -> Dict[str, List[float]]:
             """Full training loop."""
@@ -863,9 +874,41 @@ if TORCH_AVAILABLE:
             for epoch in range(num_epochs):
                 train_loss = self.train_epoch(train_loader)
                 self.history["train_loss"].append(train_loss)
-                print(f"Epoch {epoch+1}/{num_epochs} - Loss: {train_loss:.4f}")
+                
+                print(f"Epoch {epoch+1}/{num_epochs} - Train Loss: {train_loss:.4f}")
             
             return self.history
+        
+        def validate(self, dataloader: DataLoader) -> float:
+            """Validate the model."""
+            self.model.eval()
+            total_loss = 0.0
+            num_batches = 0
+            
+            with torch.no_grad():
+                for patches1, patches2, labels, n1, n2 in dataloader:
+                    batch_size = patches1.size(0)
+                    
+                    # Flatten patches for encoding
+                    all_patches1 = patches1.view(-1, 1, 
+                        self.config.patch_size, self.config.patch_size).to(self.device)
+                    all_patches2 = patches2.view(-1, 1,
+                        self.config.patch_size, self.config.patch_size).to(self.device)
+                    
+                    labels = labels.to(self.device).float()
+                    
+                    # Encode each fingerprint
+                    emb1 = self.model(all_patches1, n1.tolist())
+                    emb2 = self.model(all_patches2, n2.tolist())
+                    
+                    # Compute loss
+                    loss = self.loss_fn(emb1, emb2, labels)
+                    
+                    total_loss += loss.item()
+                    num_batches += 1
+            
+            self.model.train()
+            return total_loss / num_batches if num_batches > 0 else 0.0
 
 
 # =============================================================================
