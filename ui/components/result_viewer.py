@@ -110,6 +110,15 @@ def render_details_panel(
     # Convert for display
     display_details = convert_result_for_display(details)
     
+    # Display error/warning messages first if present
+    if "error" in display_details:
+        st.error(f"⚠️ **Error:** {display_details['error']}")
+        exclude_keys.add("error")
+    
+    if "warning" in display_details:
+        st.warning(f"⚠️ **Warning:** {display_details['warning']}")
+        exclude_keys.add("warning")
+    
     # Group by type
     metrics = {}
     dicts = {}

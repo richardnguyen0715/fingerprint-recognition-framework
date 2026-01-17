@@ -91,22 +91,17 @@ class CNNEmbeddingMatcherAdapter(BaseMatcher):
                 },
             )
         
-        if not self._model_loaded:
-            return MatchResult(
-                score=0.0,
-                details={
-                    "error": "No pretrained model loaded. Please upload model weights.",
-                    "model_loaded": False,
-                },
-            )
-        
         try:
             # Extract embeddings
             embedding_a = self._matcher.extract_embedding(image_a)
             embedding_b = self._matcher.extract_embedding(image_b)
             
-            # Compute cosine similarity
-            similarity = float(np.dot(embedding_a, embedding_b))
+            # Compute embedding norms
+            norm_a = float(np.linalg.norm(embedding_a))
+            norm_b = float(np.linalg.norm(embedding_b))
+            
+            # Compute cosine similarity (normalized dot product)
+            similarity = float(np.dot(embedding_a, embedding_b) / (norm_a * norm_b + 1e-8))
             
             # Convert to [0, 1] range (cosine is in [-1, 1])
             score = (similarity + 1.0) / 2.0
@@ -118,10 +113,17 @@ class CNNEmbeddingMatcherAdapter(BaseMatcher):
                 "cosine_similarity": similarity,
                 "euclidean_distance": euclidean_dist,
                 "embedding_dim": self._embedding_dim,
-                "embedding_norm_a": float(np.linalg.norm(embedding_a)),
-                "embedding_norm_b": float(np.linalg.norm(embedding_b)),
-                "model_loaded": True,
+                "embedding_norm_a": norm_a,
+                "embedding_norm_b": norm_b,
+                "model_loaded": self._model_loaded,
             }
+            
+            # Add warning if no pretrained model loaded
+            if not self._model_loaded:
+                details["warning"] = (
+                    "No pretrained model loaded. Results are from random weights "
+                    "and not meaningful. Please provide a trained model path."
+                )
             
             return MatchResult(
                 score=score,
@@ -189,7 +191,7 @@ class PatchCNNMatcherAdapter(BaseMatcher):
         config = PatchCNNConfig(
             patch_size=patch_size,
             embedding_dim=embedding_dim,
-            aggregation_method=aggregation,
+            aggregation=aggregation,
         )
         
         # Initialize matcher
@@ -228,15 +230,6 @@ class PatchCNNMatcherAdapter(BaseMatcher):
                 },
             )
         
-        if not self._model_loaded:
-            return MatchResult(
-                score=0.0,
-                details={
-                    "error": "No pretrained model loaded. Please upload model weights.",
-                    "model_loaded": False,
-                },
-            )
-        
         try:
             # Perform matching
             score = self._matcher.match(image_a, image_b)
@@ -251,9 +244,16 @@ class PatchCNNMatcherAdapter(BaseMatcher):
                 "num_patches_b": len(patches_b),
                 "patch_size": self._patch_size,
                 "embedding_dim": self._embedding_dim,
-                "aggregation_method": self._aggregation,
-                "model_loaded": True,
+                "aggregation": self._aggregation,
+                "model_loaded": self._model_loaded,
             }
+            
+            # Add warning if no pretrained model loaded
+            if not self._model_loaded:
+                details["warning"] = (
+                    "No pretrained model loaded. Results are from random weights "
+                    "and not meaningful. Please provide a trained model path."
+                )
             
             # Normalize score to [0, 1] if needed
             if score < 0:
