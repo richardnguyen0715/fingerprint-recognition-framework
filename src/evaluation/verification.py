@@ -576,8 +576,9 @@ def compare_matchers(
         
         # Summary table
         summary_lines = ["Matcher Comparison Summary", "=" * 60, ""]
+        d_prime_label = "d'"
         summary_lines.append(
-            f"{'Method':<20} {'EER':>10} {'AUC':>10} {'d\\':>10}"
+            f"{'Method':<20} {'EER':>10} {'AUC':>10} {d_prime_label:>10}"
         )
         summary_lines.append("-" * 60)
         

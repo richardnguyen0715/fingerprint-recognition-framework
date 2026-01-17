@@ -5,7 +5,9 @@ This module provides components for configuring model parameters
 based on the model's metadata.
 """
 
+from pathlib import Path
 from typing import Any, Dict, Optional
+import tempfile
 
 import streamlit as st
 
@@ -15,6 +17,113 @@ from src.registry import (
     ParameterType,
     get_registry,
 )
+
+
+def _render_model_path_input(
+    param: ParameterInfo,
+    current_value: str,
+    key: str,
+) -> str:
+    """
+    Render a special input widget for model_path parameter.
+    
+    Provides options to:
+    1. Upload a new model file
+    2. Select from available checkpoints
+    3. Enter a custom path
+    
+    Args:
+        param: Parameter metadata
+        current_value: Current path value
+        key: Widget key
+        
+    Returns:
+        Selected model path
+    """
+    st.markdown(f"**{param.display_name}**")
+    if param.description:
+        st.caption(param.description)
+    
+    # Tab options for different input methods
+    tab1, tab2, tab3 = st.tabs(["📤 Upload", "📁 Browse", "⌨️ Manual"])
+    
+    with tab1:
+        st.caption("Upload a pretrained model (.pth file)")
+        uploaded_file = st.file_uploader(
+            label="Choose model file",
+            type=["pth", "pt"],
+            key=f"{key}_upload",
+            label_visibility="collapsed",
+        )
+        
+        if uploaded_file is not None:
+            # Save to temporary location or models directory
+            from src.utils.model_loader import get_models_dir
+            
+            # Determine model type from context (if possible)
+            # For now, save to a temp location and return the path
+            temp_dir = Path(tempfile.gettempdir()) / "fingerprint_models"
+            temp_dir.mkdir(exist_ok=True)
+            
+            temp_path = temp_dir / uploaded_file.name
+            with open(temp_path, "wb") as f:
+                f.write(uploaded_file.getbuffer())
+            
+            st.success(f"✅ Uploaded: {uploaded_file.name}")
+            st.caption(f"Path: {temp_path}")
+            return str(temp_path)
+    
+    with tab2:
+        st.caption("Select from available checkpoints")
+        try:
+            from src.utils.model_loader import list_available_models
+            
+            available = list_available_models()
+            all_models = []
+            for model_type, paths in available.items():
+                for path in paths:
+                    all_models.append((model_type, Path(path).name, path))
+            
+            if all_models:
+                options = [f"{mt}: {name}" for mt, name, _ in all_models]
+                paths = [path for _, _, path in all_models]
+                
+                selected_idx = st.selectbox(
+                    label="Available models",
+                    options=range(len(options)),
+                    format_func=lambda i: options[i],
+                    key=f"{key}_browse",
+                    label_visibility="collapsed",
+                )
+                
+                if selected_idx is not None:
+                    st.caption(f"Path: {paths[selected_idx]}")
+                    return paths[selected_idx]
+            else:
+                st.info("No checkpoints found in models/checkpoints/")
+                st.caption("Train models or upload weights to use this feature.")
+        except Exception as e:
+            st.error(f"Error listing models: {e}")
+    
+    with tab3:
+        st.caption("Enter model path manually")
+        manual_path = st.text_input(
+            label="Model path",
+            value=current_value,
+            key=f"{key}_manual",
+            label_visibility="collapsed",
+        )
+        
+        if manual_path:
+            # Validate path
+            if Path(manual_path).exists():
+                st.success("✅ File exists")
+            elif manual_path:
+                st.warning("⚠️ File not found")
+        
+        return manual_path
+    
+    return current_value
 
 
 def render_parameter_input(
@@ -61,12 +170,16 @@ def render_parameter_input(
         )
     
     elif param.param_type == ParameterType.STRING:
-        return st.text_input(
-            label=param.display_name,
-            value=str(value),
-            help=param.description,
-            key=key,
-        )
+        # Special handling for model_path parameter
+        if param.name == "model_path":
+            return _render_model_path_input(param, value, key)
+        else:
+            return st.text_input(
+                label=param.display_name,
+                value=str(value),
+                help=param.description,
+                key=key,
+            )
     
     elif param.param_type == ParameterType.BOOLEAN:
         return st.checkbox(
