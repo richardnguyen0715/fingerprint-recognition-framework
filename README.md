@@ -2,8 +2,6 @@
 
 A comprehensive fingerprint recognition framework implementing classical and deep learning methods for biometric verification.
 
-**Final Project - Biometrics Course at VNU-HCMUS 2025-2026**
-
 ## Overview
 
 This framework provides a complete implementation of fingerprint recognition systems, from classical image-based methods to state-of-the-art deep learning approaches. All methods are implemented explicitly without relying on black-box libraries.
@@ -307,12 +305,3 @@ See `requirements.txt` for complete list.
    for Fingerprint Recognition." IEEE TPAMI, 32(12), 2128-2141.
 
 3. ISO/IEC 19795-1:2021 - Biometric performance testing and reporting.
-
-## License
-
-This project is for educational purposes as part of the Biometrics course 
-at VNU-HCMUS 2025-2026.
-
-## Authors
-
-VNU-HCMUS Biometrics Course 2025-2026
