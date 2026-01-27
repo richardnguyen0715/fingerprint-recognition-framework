@@ -304,4 +304,7 @@ See `requirements.txt` for complete list.
    "Minutia Cylinder-Code: A New Representation and Matching Technique 
    for Fingerprint Recognition." IEEE TPAMI, 32(12), 2128-2141.
 
-3. ISO/IEC 19795-1:2021 - Biometric performance testing and reporting.
+3. N. Pradeep and J. Ravi, “An revolutionary fingerprint authentication approach using gabor filters for feature extraction and deep learning classification using convolutional neural networks,” in Innovations in Electronics and Communication Engineering: Proceedings of the 9th ICIECE 2021, pp. 349–360, Springer, 2022.
+
+4. Temirlan Meiramkhanov1, Arailym Tleubayeva2 (2024).
+   Enhancing Fingerprint Recognition Systems: Comparative Analysis of Biometric Authentication Algorithms and Techniques for Improved Accuracy and Reliability. ArXiv.org, 2024
